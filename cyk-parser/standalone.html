@@ -1,0 +1,3217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYK Parsing Algorithm — Cocke–Younger–Kasami Dynamic Programming Parser</title>
+  <style>
+/* ==========================================================================
+   CYK Parsing Algorithm — Academic DAA Mini-Project Stylesheet
+   Theme: Academic Dark Blue / Slate / Clean White
+   ========================================================================== */
+
+:root {
+  --primary-900: #0a192f;
+  --primary-800: #0f2b48;
+  --primary-700: #1a365d;
+  --primary-600: #2563eb;
+  --primary-500: #3b82f6;
+  --primary-100: #dbeafe;
+  --primary-50: #eff6ff;
+
+  --accent-green-700: #047857;
+  --accent-green-600: #059669;
+  --accent-green-500: #10b981;
+  --accent-green-100: #d1fae5;
+  --accent-green-50: #ecfdf5;
+
+  --accent-red-700: #b91c1c;
+  --accent-red-600: #dc2626;
+  --accent-red-500: #ef4444;
+  --accent-red-100: #fee2e2;
+  --accent-red-50: #fef2f2;
+
+  --neutral-900: #0f172a;
+  --neutral-800: #1e293b;
+  --neutral-700: #334155;
+  --neutral-600: #475569;
+  --neutral-500: #64748b;
+  --neutral-400: #94a3b8;
+  --neutral-300: #cbd5e1;
+  --neutral-200: #e2e8f0;
+  --neutral-100: #f1f5f9;
+  --neutral-50: #f8fafc;
+  --white: #ffffff;
+
+  --border-radius-sm: 6px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 14px;
+  --border-radius-xl: 18px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
+}
+
+/* Reset & Global */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--neutral-50);
+  color: var(--neutral-800);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Academic Top Banner */
+.college-header-bar {
+  background: var(--primary-900);
+  color: var(--neutral-300);
+  padding: 0.5rem 1.5rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.college-header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.course-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--primary-100);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.project-affiliation {
+  color: var(--neutral-400);
+  font-size: 0.8rem;
+}
+
+/* Main Site Header */
+.site-header {
+  background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-700) 100%);
+  color: var(--white);
+  padding: 2.5rem 1.5rem 2rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+.header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.site-title-wrap {
+  margin-bottom: 1.5rem;
+}
+
+.academic-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--primary-50);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin-bottom: 0.75rem;
+}
+
+.main-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+  color: var(--white);
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--primary-100);
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.header-description {
+  font-size: 0.95rem;
+  color: var(--neutral-300);
+  max-width: 800px;
+  line-height: 1.5;
+}
+
+/* Navigation Bar */
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.nav-link {
+  color: var(--primary-100);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-link:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Preset Quick Bar */
+.preset-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--neutral-200);
+  padding: 0.85rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.preset-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.preset-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--neutral-700);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.btn-preset {
+  background: var(--neutral-100);
+  border: 1px solid var(--neutral-300);
+  color: var(--neutral-700);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-preset:hover {
+  background: var(--primary-50);
+  border-color: var(--primary-500);
+  color: var(--primary-700);
+  transform: translateY(-1px);
+}
+
+.btn-preset .preset-badge {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.badge-acc {
+  background: var(--accent-green-100);
+  color: var(--accent-green-700);
+}
+
+.badge-rej {
+  background: var(--accent-red-100);
+  color: var(--accent-red-700);
+}
+
+/* Layout Containers */
+.main-content {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 1.75rem auto 3rem;
+  padding: 0 1.25rem;
+}
+
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .two-col-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card Component */
+.card {
+  background: var(--white);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-800);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-title-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: var(--primary-700);
+  color: var(--white);
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Form Controls */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--neutral-700);
+  margin-bottom: 0.4rem;
+}
+
+.grammar-textarea {
+  width: 100%;
+  height: 210px;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  padding: 0.85rem;
+  border: 1px solid var(--neutral-300);
+  border-radius: var(--border-radius-md);
+  background-color: var(--neutral-50);
+  color: var(--neutral-900);
+  resize: vertical;
+  line-height: 1.5;
+  transition: all 0.2s ease;
+}
+
+.grammar-textarea:focus,
+.string-input:focus {
+  outline: none;
+  border-color: var(--primary-600);
+  background-color: var(--white);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.string-input-wrap {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.string-input {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--neutral-300);
+  border-radius: var(--border-radius-md);
+  background-color: var(--neutral-50);
+  color: var(--neutral-900);
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* Buttons */
+.btn-group {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--primary-700);
+  color: var(--white);
+  box-shadow: 0 2px 4px rgba(26, 54, 93, 0.2);
+}
+
+.btn-primary:hover {
+  background: var(--primary-800);
+  box-shadow: 0 4px 8px rgba(26, 54, 93, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  border-color: var(--neutral-300);
+}
+
+.btn-secondary:hover {
+  background: var(--neutral-200);
+  color: var(--neutral-900);
+}
+
+.btn-run {
+  background: var(--accent-green-600);
+  color: var(--white);
+  font-size: 1rem;
+  padding: 0.75rem 1.75rem;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+}
+
+.btn-run:hover {
+  background: var(--accent-green-700);
+  transform: translateY(-1px);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+/* Info Callout Box */
+.info-box {
+  background-color: var(--primary-50);
+  border: 1px solid var(--primary-100);
+  border-left: 4px solid var(--primary-600);
+  border-radius: var(--border-radius-sm);
+  padding: 0.85rem 1rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--neutral-700);
+}
+
+.info-box strong {
+  color: var(--primary-800);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.info-box ul {
+  padding-left: 1.25rem;
+  margin-top: 0.35rem;
+}
+
+.info-box code {
+  font-family: var(--font-mono);
+  background: rgba(37, 99, 235, 0.1);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.82rem;
+  color: var(--primary-700);
+}
+
+/* Validation Card */
+.validation-card {
+  border-left-width: 5px;
+  transition: all 0.2s ease;
+}
+
+.validation-card.valid-state {
+  border-left-color: var(--accent-green-600);
+  background: var(--white);
+}
+
+.validation-card.invalid-state {
+  border-left-color: var(--accent-red-600);
+  background: var(--accent-red-50);
+}
+
+.validation-status-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  margin-bottom: 0.75rem;
+}
+
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.success-icon {
+  background: var(--accent-green-100);
+  color: var(--accent-green-700);
+}
+
+.error-icon {
+  background: var(--accent-red-100);
+  color: var(--accent-red-700);
+}
+
+.validation-checklist {
+  list-style: none;
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--neutral-700);
+}
+
+.check-mark {
+  color: var(--accent-green-600);
+  font-weight: bold;
+  margin-right: 0.4rem;
+}
+
+.cross-mark {
+  color: var(--accent-red-600);
+  font-weight: bold;
+  margin-right: 0.4rem;
+}
+
+.validation-error-list {
+  color: var(--accent-red-700);
+  font-size: 0.875rem;
+}
+
+.error-lead {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.validation-error-list ul {
+  list-style: none;
+  padding-left: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+/* Grammar Summary Card */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.summary-metric {
+  background: var(--neutral-100);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-md);
+  padding: 0.75rem 1rem;
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--neutral-500);
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.metric-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary-800);
+  font-family: var(--font-mono);
+}
+
+.summary-rules-box {
+  background: var(--neutral-50);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-md);
+  padding: 0.85rem;
+}
+
+.summary-rules-box .field-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--neutral-600);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.productions-badges-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.prod-badge {
+  background: var(--white);
+  border: 1px solid var(--neutral-300);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  color: var(--primary-700);
+}
+
+/* Result Banner */
+.result-banner {
+  border-radius: var(--border-radius-lg);
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.result-banner.accepted {
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  color: var(--white);
+  border: 2px solid var(--accent-green-500);
+}
+
+.result-banner.rejected {
+  background: linear-gradient(135deg, #991b1b 0%, #b91c1c 100%);
+  color: var(--white);
+  border: 2px solid var(--accent-red-500);
+}
+
+.result-icon-container {
+  flex-shrink: 0;
+}
+
+.result-status-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.result-content {
+  flex: 1;
+}
+
+.result-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.result-dp-cell {
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.result-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.25rem;
+}
+
+.result-subtitle {
+  font-size: 1.05rem;
+  opacity: 0.95;
+  margin-bottom: 0.85rem;
+}
+
+.result-math-reason {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.math-icon {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.badge-accepted, .badge-success {
+  background: var(--accent-green-100);
+  color: var(--accent-green-700);
+  border: 1px solid var(--accent-green-500);
+}
+
+.badge-rejected, .badge-error {
+  background: var(--accent-red-100);
+  color: var(--accent-red-700);
+  border: 1px solid var(--accent-red-500);
+}
+
+.badge-match {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.badge-nomatch {
+  background: var(--neutral-100);
+  color: var(--neutral-500);
+  border: 1px solid var(--neutral-300);
+}
+
+.badge-neutral {
+  background: var(--neutral-200);
+  color: var(--neutral-700);
+}
+
+/* SECTION 5: CYK Triangular Table */
+.table-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.view-toggle-btns {
+  display: flex;
+  background: var(--neutral-100);
+  border: 1px solid var(--neutral-300);
+  border-radius: var(--border-radius-md);
+  padding: 0.2rem;
+}
+
+.toggle-btn {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--neutral-600);
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.15s ease;
+}
+
+.toggle-btn.active {
+  background: var(--white);
+  color: var(--primary-700);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Pyramid Container */
+.pyramid-scroll-wrap {
+  overflow-x: auto;
+  padding: 1rem 0 1.5rem;
+  margin: 0 -0.5rem;
+}
+
+.cyk-pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 600px;
+  padding: 0 1rem;
+}
+
+.pyramid-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.pyramid-row-label {
+  position: absolute;
+  left: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--neutral-400);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.pyramid-cells-wrap {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+/* CYK Cell Buttons in Pyramid */
+.cyk-cell {
+  background: var(--white);
+  border: 2px solid var(--neutral-300);
+  border-radius: var(--border-radius-md);
+  padding: 0.6rem 0.8rem;
+  min-width: 82px;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.cyk-cell:hover {
+  border-color: var(--primary-500);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.cyk-cell.selected-cell {
+  border-color: var(--primary-600);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+  background: var(--primary-50);
+}
+
+.cyk-cell.has-start {
+  border-color: var(--accent-green-500);
+  background: #f0fdf4;
+}
+
+.cyk-cell.apex-cell {
+  border-width: 3px;
+  border-color: var(--primary-700);
+  background: #eff6ff;
+}
+
+.cyk-cell.apex-cell.has-start {
+  border-color: var(--accent-green-600);
+  background: #ecfdf5;
+}
+
+.cyk-cell.empty-cell .cell-vars {
+  color: var(--neutral-400);
+}
+
+.cell-coords {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--neutral-500);
+  margin-bottom: 0.15rem;
+}
+
+.cell-vars {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary-900);
+  font-family: var(--font-mono);
+  margin: 0.1rem 0;
+}
+
+.cell-substr {
+  font-size: 0.68rem;
+  color: var(--neutral-500);
+  font-style: italic;
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Pyramid Terminal Base Row */
+.pyramid-base-row {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 2px dashed var(--neutral-300);
+}
+
+.terminal-char-cell {
+  background: var(--primary-800);
+  color: var(--white);
+  border-radius: var(--border-radius-md);
+  padding: 0.5rem 0.75rem;
+  min-width: 82px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.char-pos {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  font-family: var(--font-mono);
+}
+
+.char-val {
+  font-size: 1.25rem;
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+/* Matrix Table View */
+.matrix-table-responsive {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.academic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.academic-table th,
+.academic-table td {
+  border: 1px solid var(--neutral-300);
+  padding: 0.65rem 0.5rem;
+}
+
+.academic-table th {
+  background: var(--neutral-100);
+  color: var(--neutral-800);
+  font-weight: 700;
+}
+
+.table-sublabel {
+  font-size: 0.75rem;
+  font-weight: normal;
+  color: var(--neutral-500);
+}
+
+.matrix-corner {
+  background: var(--neutral-200);
+  font-size: 0.75rem;
+}
+
+.matrix-unused {
+  background: var(--neutral-100);
+  color: var(--neutral-400);
+}
+
+.matrix-cell {
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.matrix-cell:hover {
+  background: var(--primary-50);
+}
+
+.matrix-cell.selected-cell {
+  background: var(--primary-100);
+  outline: 2px solid var(--primary-600);
+}
+
+.matrix-cell.matrix-has-start {
+  background: #f0fdf4;
+}
+
+.matrix-cell.matrix-apex {
+  border: 2px solid var(--primary-700);
+}
+
+.m-cell-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.m-cell-vars {
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--primary-900);
+}
+
+.m-cell-sub {
+  font-size: 0.7rem;
+  color: var(--neutral-500);
+}
+
+/* SECTION 6: Boolean Matrix */
+.bool-matrix-header {
+  margin-bottom: 0.85rem;
+}
+
+.bool-info {
+  font-size: 0.85rem;
+  color: var(--neutral-600);
+}
+
+.bool-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+}
+
+.bool-true {
+  background: var(--accent-green-100);
+  color: var(--accent-green-700);
+  border: 1px solid var(--accent-green-500);
+}
+
+.bool-false {
+  background: var(--neutral-100);
+  color: var(--neutral-500);
+  border: 1px solid var(--neutral-300);
+}
+
+.bool-apex {
+  border: 2px solid var(--primary-700) !important;
+  background: var(--primary-50);
+}
+
+.apex-verdict {
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--primary-800);
+}
+
+/* Cell Inspector Panel */
+.inspector-card-inner {
+  background: var(--neutral-50);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-md);
+  padding: 1.25rem;
+}
+
+.inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+.cell-tag {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary-800);
+  font-family: var(--font-mono);
+}
+
+.inspector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.inspector-field {
+  background: var(--white);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-sm);
+  padding: 0.5rem 0.75rem;
+}
+
+.field-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--neutral-500);
+  font-weight: 700;
+  display: block;
+}
+
+.field-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--neutral-800);
+  font-family: var(--font-mono);
+}
+
+.highlight-substr {
+  color: var(--primary-700);
+}
+
+.inspector-variables-box {
+  background: var(--white);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.variables-display {
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--primary-800);
+  margin-top: 0.25rem;
+}
+
+.inspector-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-800);
+  margin-bottom: 0.6rem;
+}
+
+.derivation-terminal-box {
+  background: var(--white);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-sm);
+  padding: 0.85rem;
+  font-size: 0.85rem;
+}
+
+.derivation-rules-list {
+  list-style: none;
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.splits-table th {
+  font-size: 0.78rem;
+  padding: 0.4rem;
+}
+
+.splits-table td {
+  font-size: 0.8rem;
+  padding: 0.5rem 0.4rem;
+}
+
+/* SECTION 7: Step-by-Step Execution Trace */
+.trace-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.step-accordion-item {
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-md);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  background: var(--white);
+}
+
+.step-accordion-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.15rem;
+  background: var(--neutral-50);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.95rem;
+  color: var(--neutral-800);
+  transition: background 0.15s ease;
+}
+
+.step-accordion-header:hover {
+  background: var(--neutral-100);
+}
+
+.step-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.step-number-badge {
+  background: var(--primary-700);
+  color: var(--white);
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.step-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cell-count-tag {
+  font-size: 0.8rem;
+  color: var(--neutral-500);
+}
+
+.accordion-chevron {
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.step-accordion-item.open .accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.step-accordion-content {
+  display: none;
+  padding: 1.15rem;
+  border-top: 1px solid var(--neutral-200);
+}
+
+.step-accordion-item.open .step-accordion-content {
+  display: block;
+}
+
+.step-group-desc {
+  font-size: 0.85rem;
+  color: var(--neutral-600);
+  margin-bottom: 1rem;
+}
+
+.step-cells-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.step-cell-card {
+  background: var(--neutral-50);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-sm);
+  padding: 0.85rem;
+}
+
+.step-cell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--neutral-200);
+  margin-bottom: 0.5rem;
+}
+
+.step-cell-id {
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--primary-800);
+}
+
+.step-cell-substr {
+  font-size: 0.85rem;
+  color: var(--neutral-700);
+}
+
+.step-cell-result {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.step-split-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.25rem;
+}
+
+.step-split-row.split-matched {
+  background: #ecfdf5;
+  border-left: 3px solid var(--accent-green-500);
+}
+
+.split-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.split-k {
+  font-weight: bold;
+  font-family: var(--font-mono);
+}
+
+.split-cells-meta {
+  color: var(--neutral-500);
+  font-size: 0.75rem;
+}
+
+/* SECTION 8: Algorithm Flowchart Visualization */
+.flowchart-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+}
+
+.flow-step {
+  background: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  border-radius: var(--border-radius-md);
+  padding: 0.65rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary-900);
+  text-align: center;
+  min-width: 280px;
+  box-shadow: var(--shadow-sm);
+}
+
+.flow-arrow {
+  color: var(--primary-500);
+  font-size: 1.25rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.flow-decision {
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  border-radius: var(--border-radius-md);
+  padding: 0.65rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #854d0e;
+  text-align: center;
+  min-width: 240px;
+}
+
+.flow-branches {
+  display: flex;
+  gap: 3rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.flow-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.flow-branch-label {
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.flow-branch-label.yes {
+  color: var(--accent-green-700);
+}
+
+.flow-branch-label.no {
+  color: var(--accent-red-700);
+}
+
+.flow-terminal {
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--border-radius-md);
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-align: center;
+  min-width: 140px;
+}
+
+.flow-terminal.acc {
+  background: var(--accent-green-100);
+  border: 2px solid var(--accent-green-600);
+  color: var(--accent-green-700);
+}
+
+.flow-terminal.rej {
+  background: var(--accent-red-100);
+  border: 2px solid var(--accent-red-600);
+  color: var(--accent-red-700);
+}
+
+/* SECTION 9 & 10: Formal Algorithm & Pseudocode */
+.code-block-container {
+  background: #0f172a;
+  border-radius: var(--border-radius-md);
+  padding: 1.25rem;
+  overflow-x: auto;
+  color: #f8fafc;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  border: 1px solid #1e293b;
+}
+
+.code-block-container pre {
+  margin: 0;
+}
+
+.code-keyword {
+  color: #93c5fd;
+  font-weight: bold;
+}
+
+.code-comment {
+  color: #64748b;
+  font-style: italic;
+}
+
+.code-var {
+  color: #fca5a5;
+}
+
+.code-function {
+  color: #6ee7b7;
+}
+
+.code-number {
+  color: #fde047;
+}
+
+/* SECTION 11: Complexity Card */
+.complexity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .complexity-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.complexity-card {
+  background: var(--neutral-50);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--border-radius-md);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.complexity-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--neutral-500);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.complexity-formula {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--primary-700);
+  font-family: var(--font-mono);
+  margin-bottom: 0.5rem;
+}
+
+.complexity-desc {
+  font-size: 0.85rem;
+  color: var(--neutral-600);
+}
+
+.complexity-details {
+  font-size: 0.9rem;
+  color: var(--neutral-700);
+  line-height: 1.6;
+}
+
+.complexity-details p {
+  margin-bottom: 0.75rem;
+}
+
+/* SECTION 14: Export & Action Buttons */
+.action-buttons-wrap {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Utilities */
+.hidden {
+  display: none !important;
+}
+
+/* Footer */
+.site-footer {
+  background: var(--primary-900);
+  color: var(--neutral-400);
+  padding: 2.5rem 1.5rem;
+  font-size: 0.875rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.footer-meta {
+  line-height: 1.5;
+}
+
+.footer-meta strong {
+  color: var(--white);
+}
+
+/* ==========================================================================
+   Print Stylesheet (@media print)
+   Optimized for Academic Project Paper Submission / Grading Report
+   ========================================================================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+
+  .college-header-bar,
+  .main-nav,
+  .preset-bar,
+  .btn-group,
+  .action-buttons-wrap,
+  .view-toggle-btns,
+  .site-footer,
+  #btnExpandAll,
+  #btnCollapseAll {
+    display: none !important;
+  }
+
+  .site-header {
+    background: transparent !important;
+    color: #000000 !important;
+    padding: 0 0 1rem 0 !important;
+    border-bottom: 2px solid #000000 !important;
+  }
+
+  .main-title {
+    color: #000000 !important;
+    font-size: 18pt !important;
+  }
+
+  .subtitle {
+    color: #333333 !important;
+    font-size: 13pt !important;
+  }
+
+  .header-description {
+    color: #555555 !important;
+  }
+
+  .card {
+    border: 1px solid #cccccc !important;
+    box-shadow: none !important;
+    margin-bottom: 1rem !important;
+    page-break-inside: avoid;
+  }
+
+  .result-banner {
+    border: 2px solid #000000 !important;
+    color: #000000 !important;
+    background: #f4f4f4 !important;
+    page-break-inside: avoid;
+  }
+
+  .result-banner.accepted .result-title,
+  .result-banner.rejected .result-title {
+    color: #000000 !important;
+  }
+
+  .step-accordion-content {
+    display: block !important;
+  }
+
+  .academic-table th,
+  .academic-table td {
+    border: 1px solid #000000 !important;
+  }
+}
+
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Academic Department Header Bar -->
+  <aside class="college-header-bar" aria-label="Course and Department Info">
+    <div class="college-header-inner">
+      <span class="course-tag">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        Department of Computer Science &amp; Engineering &bull; CS302 Design &amp; Analysis of Algorithms
+      </span>
+      <span class="project-affiliation">Dynamic Programming Term Project &bull; Browser &amp; GitHub Pages Compatible</span>
+    </div>
+  </aside>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="site-title-wrap">
+        <span class="academic-badge">DAA Dynamic Programming Mini-Project</span>
+        <h1 class="main-title">CYK PARSING ALGORITHM</h1>
+        <p class="subtitle">Cocke–Younger–Kasami Dynamic Programming Parser</p>
+        <p class="header-description">
+          Determine whether a string can be generated by a Context-Free Grammar in Chomsky Normal Form using dynamic programming.
+        </p>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="main-nav" aria-label="Main Navigation">
+        <a href="#parser-section" class="nav-link">Parser</a>
+        <a href="#how-it-works-section" class="nav-link">How It Works</a>
+        <a href="#algorithm-section" class="nav-link">Algorithm</a>
+        <a href="#complexity-section" class="nav-link">Complexity</a>
+        <a href="#examples-section" class="nav-link">Examples</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- SECTION 13: PRESET EXAMPLE BUTTONS BAR -->
+  <section class="preset-bar" id="examples-section" aria-label="Preset Examples">
+    <div class="preset-container">
+      <span class="preset-label">Preset Examples:</span>
+      <button type="button" class="btn-preset" data-preset="example1" title="S->AB, A->a, B->b with 'ab'">
+        Example 1: "ab" <span class="preset-badge badge-acc">ACCEPTED</span>
+      </button>
+      <button type="button" class="btn-preset" data-preset="example2" title="S->AB, A->a, B->b with 'aa'">
+        Example 2: "aa" <span class="preset-badge badge-rej">REJECTED</span>
+      </button>
+      <button type="button" class="btn-preset" data-preset="example3" title="Classic 4-variable textbook grammar with 'baaba'">
+        Example 3: "baaba" <span class="preset-badge badge-acc">ACCEPTED (Textbook)</span>
+      </button>
+      <button type="button" class="btn-preset" data-preset="example4" title="Arithmetic expression grammar with 'a+a'">
+        Example 4: "a+a" <span class="preset-badge badge-acc">ACCEPTED</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- MAIN APPLICATION CONTENT -->
+  <main class="main-content" id="parser-section">
+
+    <!-- INPUT CARDS (TWO COLUMN GRID) -->
+    <div class="two-col-grid">
+
+      <!-- SECTION 1: GRAMMAR INPUT -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <span class="card-title-num">1</span>
+            Enter Grammar in CNF
+          </h2>
+          <div class="btn-group" style="align-items: center;">
+            <select id="presetSelect" class="preset-dropdown" aria-label="Select Preset Example" style="padding: 0.35rem 0.6rem; border-radius: var(--border-radius-sm); border: 1px solid var(--neutral-300); font-size: 0.8rem; background: var(--white); font-weight: 600; color: var(--neutral-700);">
+              <option value="">-- Load Preset --</option>
+              <option value="example1">Ex 1: "ab" (Accepted)</option>
+              <option value="example2">Ex 2: "aa" (Rejected)</option>
+              <option value="example3" selected>Ex 3: "baaba" (Accepted)</option>
+              <option value="example4">Ex 4: "a+a" (Accepted)</option>
+            </select>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnClear">Clear</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="grammarInput" class="form-label">Grammar Productions (one rule per line or pipe | separated):</label>
+          <textarea id="grammarInput" class="grammar-textarea" spellcheck="false" placeholder="S -> AB&#10;S -> BC&#10;A -> BA&#10;A -> a&#10;B -> CC&#10;B -> b&#10;C -> AB&#10;C -> a"></textarea>
+        </div>
+
+        <!-- CNF Rules Information Box -->
+        <div class="info-box">
+          <strong>CNF Rules must be of one of these forms:</strong>
+          <ul>
+            <li><code>A &rarr; BC</code> (Binary production: exactly two non-terminals)</li>
+            <li><code>A &rarr; a</code> (Terminal production: exactly one terminal)</li>
+          </ul>
+          <p style="margin-top: 0.4rem;">
+            Where <code>A, B, C</code> are non-terminal variables and <code>a</code> is a terminal symbol. Start symbol is assumed to be the LHS variable of the first production.
+          </p>
+        </div>
+      </div>
+
+      <!-- SECTION 2: STRING INPUT & CONTROLS -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <span class="card-title-num">2</span>
+            Enter Input String
+          </h2>
+        </div>
+
+        <div class="form-group">
+          <label for="stringInput" class="form-label">Target String to Parse (\(w\)):</label>
+          <div class="string-input-wrap">
+            <input type="text" id="stringInput" class="string-input" placeholder="Enter string, e.g. baaba" value="baaba" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="btn-group" style="margin-top: 1rem;">
+          <button type="button" class="btn btn-run" id="btnRun">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            Run CYK
+          </button>
+          <button type="button" class="btn btn-secondary" id="btnReset">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            Reset
+          </button>
+        </div>
+
+        <!-- SECTION 14: EXPORT & PRESENTATION FEATURES -->
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--neutral-200);">
+          <label class="form-label" style="margin-bottom: 0.5rem;">Report &amp; Export Options:</label>
+          <div class="action-buttons-wrap">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnPrint" title="Print academic project report or export to PDF">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              Print Result
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnDownloadCSV" title="Download CYK dynamic programming table as CSV">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download Table as CSV
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 3: INPUT VALIDATION CARD -->
+    <div id="validationCard" class="card validation-card hidden">
+      <div id="validationList"></div>
+    </div>
+
+    <!-- DYNAMIC OUTPUT SECTION (HIDDEN UNTIL VALID RUN) -->
+    <div id="outputSection" class="hidden">
+
+      <!-- SECTION 12: RESULT CARD (PROMINENT BANNER) -->
+      <section id="resultBanner" class="result-banner accepted" aria-live="polite">
+        <!-- Rendered dynamically by script.js -->
+      </section>
+
+      <!-- SECTION 4: GRAMMAR SUMMARY -->
+      <section class="card" id="summaryCard">
+        <div class="card-header">
+          <h2 class="card-title">Grammar &amp; Input Summary</h2>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-metric">
+            <span class="metric-label">Start Symbol</span>
+            <span class="metric-value" id="summaryStartSymbol">S</span>
+          </div>
+          <div class="summary-metric">
+            <span class="metric-label">Non-Terminals (\(V\))</span>
+            <span class="metric-value" id="summaryNonTerminals">{ S, A, B, C }</span>
+          </div>
+          <div class="summary-metric">
+            <span class="metric-label">Terminals (\(\Sigma\))</span>
+            <span class="metric-value" id="summaryTerminals">{ a, b }</span>
+          </div>
+          <div class="summary-metric">
+            <span class="metric-label">Total Productions (\(|P|\))</span>
+            <span class="metric-value" id="summaryProdCount">8 rules</span>
+          </div>
+          <div class="summary-metric">
+            <span class="metric-label">Target String (\(w\))</span>
+            <span class="metric-value" id="summaryString">"baaba"</span>
+          </div>
+          <div class="summary-metric">
+            <span class="metric-label">String Length (\(n\))</span>
+            <span class="metric-value" id="summaryStringLen">5</span>
+          </div>
+        </div>
+
+        <div class="summary-rules-box">
+          <span class="field-label">Parsed CNF Production Rules:</span>
+          <div class="productions-badges-wrap" id="summaryProductionsList"></div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: CYK TRIANGULAR TABLE & CELL INSPECTOR -->
+      <div class="two-col-grid" style="margin-bottom: 1.5rem;">
+        
+        <!-- CYK TABLE CARD -->
+        <section class="card" style="margin-bottom: 0;">
+          <div class="card-header table-section-header">
+            <h2 class="card-title">
+              CYK Triangular Table
+            </h2>
+            <div class="view-toggle-btns" role="tablist">
+              <button type="button" class="toggle-btn active" id="viewPyramidBtn" role="tab" aria-selected="true">Pyramid View</button>
+              <button type="button" class="toggle-btn" id="viewMatrixBtn" role="tab" aria-selected="false">Matrix View</button>
+            </div>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--neutral-600); margin-bottom: 0.75rem;">
+            Each cell <code>V[i][j]</code> holds all non-terminal variables capable of deriving the substring from position <code>i</code> to <code>j</code>. <strong>Click any cell</strong> to inspect its split breakdown and production rules.
+          </p>
+
+          <!-- Pyramid Container -->
+          <div class="pyramid-scroll-wrap" id="pyramidContainer">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Matrix Table Container (Hidden by default) -->
+          <div id="matrixContainer" class="hidden">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+
+        <!-- CELL INSPECTOR CARD -->
+        <section class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <h2 class="card-title">
+              Cell Derivation Inspector
+            </h2>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--neutral-600); margin-bottom: 0.75rem;">
+            Detailed mathematical breakdown of how variables were derived for the selected substring.
+          </p>
+          <div id="cellInspector">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+
+      </div>
+
+      <!-- SECTION 6: BOOLEAN VALIDATION MATRIX -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Boolean Validation Matrix</h2>
+        </div>
+        <div id="booleanMatrixContainer">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- SECTION 7: STEP-BY-STEP CYK EXECUTION -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Step-by-Step CYK Execution</h2>
+          <div class="trace-controls">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnExpandAll">Expand All</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnCollapseAll">Collapse All</button>
+          </div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--neutral-600); margin-bottom: 1rem;">
+          Dynamic programming progression from substrings of length 1 (base case) through length \(n\) (full string derivation).
+        </p>
+        <div id="traceAccordion">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ACADEMIC & THEORETICAL SECTIONS -->
+
+    <!-- SECTION 8: ALGORITHM VISUALIZATION FLOWCHART -->
+    <section class="card" id="how-it-works-section">
+      <div class="card-header">
+        <h2 class="card-title">Algorithm Visualization &amp; Dynamic Programming Flow</h2>
+      </div>
+      <p style="font-size: 0.875rem; color: var(--neutral-600);">
+        The CYK algorithm systematically constructs derivations of longer substrings by combining derivations of shorter substrings already computed and memoized in the table.
+      </p>
+
+      <div class="flowchart-wrapper" aria-label="CYK Algorithm Flowchart">
+        <div class="flow-step">1. For Substring Length \(l = 1\)</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">2. Initialize terminal cells \(V[i][i] = \{ A \mid A \to w[i] \}\)</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">3. For Substring Length \(l = 2 \text{ to } n\)</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">4. For each starting position \(i\) and split position \(k \in [i \dots j-1]\)</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">5. Combine Left \(V[i][k]\) and Right \(V[k+1][j]\) variables</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">6. Check binary productions: if \(A \to BC\) with \(B \in V[i][k]\), \(C \in V[k+1][j]\)</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">7. Store valid variable \(A\) in cell \(V[i][j]\)</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-decision">Check Apex Cell \(V[0][n-1]\):<br>Does it contain Start Symbol \(S\)?</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-branches">
+          <div class="flow-branch">
+            <span class="flow-branch-label yes">&swarr; YES</span>
+            <div class="flow-terminal acc">&check; STRING ACCEPTED</div>
+          </div>
+          <div class="flow-branch">
+            <span class="flow-branch-label no">&searr; NO</span>
+            <div class="flow-terminal rej">&cross; STRING REJECTED</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 9 & 10: FORMAL ALGORITHM & PSEUDOCODE -->
+    <div class="two-col-grid" id="algorithm-section">
+
+      <!-- SECTION 9: FORMAL ALGORITHM -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Formal Algorithm: CYK(G, w)</h2>
+        </div>
+        <div style="font-size: 0.9rem; color: var(--neutral-800); line-height: 1.6;">
+          <p style="margin-bottom: 0.75rem;"><strong>Input:</strong> A Context-Free Grammar \(G = (V, \Sigma, R, S)\) in Chomsky Normal Form (CNF) and an input string \(w = c_0 c_1 \dots c_{n-1}\) of length \(n\).</p>
+          <ol style="padding-left: 1.25rem; display: grid; gap: 0.6rem;">
+            <li>Initialize a triangular dynamic programming table \(T[n][n]\), where each entry \(T[i][j]\) is a set of variables initialized to \(\emptyset\).</li>
+            <li><strong>Base Case (Length 1):</strong> For each terminal character \(w[i]\) where \(0 \le i < n\):
+              <br>Find all non-terminals \(A\) such that \(A \to w[i] \in R\).
+              <br>Add \(A\) to \(T[i][i]\).
+            </li>
+            <li><strong>Inductive Step (Lengths \(l = 2 \text{ to } n\)):</strong>
+              <br>For every starting position \(i = 0 \text{ to } n - l\):
+              <br>&nbsp;&nbsp;Set ending position \(j = i + l - 1\).
+              <br>&nbsp;&nbsp;For every partition point \(k = i \text{ to } j - 1\):
+              <br>&nbsp;&nbsp;&nbsp;&nbsp;Check each \(B \in T[i][k]\) and \(C \in T[k+1][j]\).
+              <br>&nbsp;&nbsp;&nbsp;&nbsp;If production \(A \to BC \in R\), add \(A\) to \(T[i][j]\).
+            </li>
+            <li><strong>Membership Check:</strong> Check whether the start symbol \(S \in T[0][n-1]\).</li>
+            <li>If \(S \in T[0][n-1]\), return <strong>ACCEPT</strong>; otherwise return <strong>REJECT</strong>.</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- SECTION 10: PSEUDOCODE -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Pseudocode</h2>
+        </div>
+        <div class="code-block-container">
+<pre><code><span class="code-keyword">CYK</span>(G, w):
+  <span class="code-var">n</span> = length(w)
+  <span class="code-keyword">let</span> T[n][n] be sets of variables
+
+  <span class="code-comment">// Base Case: length 1</span>
+  <span class="code-keyword">for</span> i = <span class="code-number">0</span> <span class="code-keyword">to</span> n - <span class="code-number">1</span>:
+    T[i][i] = { A | A &rarr; w[i] &isin; G }
+
+  <span class="code-comment">// Substrings of length 2 to n</span>
+  <span class="code-keyword">for</span> length = <span class="code-number">2</span> <span class="code-keyword">to</span> n:
+    <span class="code-keyword">for</span> i = <span class="code-number">0</span> <span class="code-keyword">to</span> n - length:
+      j = i + length - <span class="code-number">1</span>
+
+      <span class="code-comment">// Try all split points k</span>
+      <span class="code-keyword">for</span> k = i <span class="code-keyword">to</span> j - <span class="code-number">1</span>:
+        <span class="code-keyword">for</span> each production A &rarr; BC:
+          <span class="code-keyword">if</span> B &isin; T[i][k] <span class="code-keyword">and</span> C &isin; T[k+<span class="code-number">1</span>][j]:
+            T[i][j].add(A)
+
+  <span class="code-keyword">return</span> S &isin; T[<span class="code-number">0</span>][n - <span class="code-number">1</span>]</code></pre>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- SECTION 11: COMPLEXITY ANALYSIS -->
+    <section class="card" id="complexity-section">
+      <div class="card-header">
+        <h2 class="card-title">Complexity Analysis &amp; Dynamic Programming Rationale</h2>
+      </div>
+
+      <div class="complexity-grid">
+        <div class="complexity-card">
+          <div class="complexity-title">Time Complexity</div>
+          <div class="complexity-formula">O(n&sup3; &times; |P|)</div>
+          <p class="complexity-desc">
+            Where \(n\) is the input string length and \(|P|\) is the total number of grammar productions.
+          </p>
+        </div>
+
+        <div class="complexity-card">
+          <div class="complexity-title">Space Complexity</div>
+          <div class="complexity-formula">O(n&sup2; &times; |V|)</div>
+          <p class="complexity-desc">
+            Where \(n\) is string length and \(|V|\) is the total number of non-terminal variables.
+          </p>
+        </div>
+      </div>
+
+      <div class="complexity-details">
+        <p>
+          <strong>Why \(O(n^3 \cdot |P|)\)?</strong>
+          The algorithm uses three nested loops:
+          The outer loop iterates over substring lengths \(l \in [2 \dots n]\) (\(O(n)\) iterations).
+          The middle loop iterates over start positions \(i \in [0 \dots n-l]\) (\(O(n)\) iterations).
+          The innermost loop tests all partition points \(k \in [i \dots j-1]\) (\(O(n)\) iterations).
+          For each split, evaluating whether candidate pairs \(BC\) match binary rules takes at most \(O(|P|)\) operations.
+          Thus, the overall running time is strictly bounded by \(O(n^3 \cdot |P|)\).
+        </p>
+        <p>
+          <strong>Dynamic Programming Foundation:</strong>
+          A naive backtracking or top-down recursive parser exhibits exponential time complexity \(O(2^n)\) due to repeated derivation of identical subproblems. CYK achieves polynomial time efficiency by exploiting:
+        </p>
+        <ul style="padding-left: 1.25rem; display: grid; gap: 0.4rem;">
+          <li><strong>Optimal Substructure:</strong> A parse tree for string \(w[i..j]\) with root \(A \to BC\) is composed of valid parse subtrees for \(w[i..k]\) rooted at \(B\) and \(w[k+1..j]\) rooted at \(C\).</li>
+          <li><strong>Overlapping Subproblems:</strong> Substrings of length \(k\) are repeatedly required when evaluating multiple larger substrings of length \(> k\). CYK tabulates results in a triangular matrix \(T[n][n]\), calculating each subproblem exactly once.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-meta">
+        <strong>CYK Parsing Algorithm Dynamic Programming Web Application</strong><br>
+        Department of Computer Science &amp; Engineering &bull; Design &amp; Analysis of Algorithms Mini-Project<br>
+        Developed with HTML5, CSS3, and Vanilla JavaScript &bull; Offline &amp; GitHub Pages Ready.
+      </div>
+      <div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+          &uarr; Back to Top
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Main Application Logic -->
+  <script>
+/**
+ * CYK Parsing Algorithm (Cocke–Younger–Kasami)
+ * Design and Analysis of Algorithms (DAA) Mini-Project
+ * 
+ * Dynamic Programming parser for Context-Free Grammars in Chomsky Normal Form (CNF)
+ * Vanilla JavaScript - No external dependencies - Browser & GitHub Pages compatible
+ */
+
+// ============================================================================
+// 1. PRESET EXAMPLES
+// ============================================================================
+const PRESETS = {
+  example1: {
+    name: "Example 1: Basic Accepted (ab)",
+    grammar: `S -> AB\nA -> a\nB -> b`,
+    string: "ab",
+    description: "Simple CNF grammar deriving 'ab'. Length 2 string."
+  },
+  example2: {
+    name: "Example 2: Basic Rejected (aa)",
+    grammar: `S -> AB\nA -> a\nB -> b`,
+    string: "aa",
+    description: "Same grammar tested on 'aa'. Rejected because S cannot derive AA."
+  },
+  example3: {
+    name: "Example 3: Classic DAA Textbook (baaba)",
+    grammar: `S -> AB
+S -> BC
+A -> BA
+A -> a
+B -> CC
+B -> b
+C -> AB
+C -> a`,
+    string: "baaba",
+    description: "Standard Hopcroft/Ullman textbook example. Length 5 string yielding apex {S, A}."
+  },
+  example4: {
+    name: "Example 4: Arithmetic Expressions (a+a)",
+    grammar: `E -> E A
+E -> a
+A -> P E
+P -> +`,
+    string: "a+a",
+    description: "Binary addition expression grammar in CNF deriving 'a+a'."
+  }
+};
+
+// ============================================================================
+// 2. GRAMMAR PARSER & CNF VALIDATOR
+// ============================================================================
+class CNFValidator {
+  /**
+   * Parse and validate grammar text and input string
+   * @param {string} grammarText 
+   * @param {string} inputString 
+   * @returns {Object} Validation report and parsed components
+   */
+  static validate(grammarText, inputString) {
+    const report = {
+      isValid: false,
+      grammarEmpty: false,
+      stringEmpty: false,
+      formatValid: true,
+      isCNF: true,
+      symbolsValid: true,
+      errors: [],
+      warnings: [],
+      startSymbol: null,
+      nonTerminals: new Set(),
+      terminals: new Set(),
+      productions: [], // Array of { id, lhs, rhs: string[], isTerminal: boolean, raw: string, line: number }
+      nonTerminalRules: new Map(), // LHS -> Array of RHS (array of tokens)
+      terminalRules: new Map(),    // Terminal char -> Set of LHS variables
+      binaryRules: new Map()       // "B C" -> Set of LHS variables (for O(1) lookup during DP)
+    };
+
+    // Check empty grammar
+    if (!grammarText || grammarText.trim().length === 0) {
+      report.grammarEmpty = true;
+      report.errors.push("Grammar input cannot be empty.");
+      return report;
+    }
+
+    // Check empty string
+    const cleanString = inputString ? inputString.trim() : "";
+    if (cleanString.length === 0) {
+      report.stringEmpty = true;
+      report.errors.push("Input string cannot be empty.");
+    }
+
+    const lines = grammarText.split(/\r?\n/);
+    let ruleIndex = 0;
+
+    for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+      let line = lines[lineNum].trim();
+      // Ignore empty lines and comments (# or //)
+      if (!line || line.startsWith("#") || line.startsWith("//")) continue;
+
+      // Handle arrow symbols -> or → or =>
+      let arrow = null;
+      if (line.includes("->")) arrow = "->";
+      else if (line.includes("→")) arrow = "→";
+      else if (line.includes("=>")) arrow = "=>";
+
+      if (!arrow) {
+        report.formatValid = false;
+        report.errors.push(`Line ${lineNum + 1}: Missing production arrow '->' or '→'. Found: "${line}"`);
+        continue;
+      }
+
+      const parts = line.split(arrow);
+      if (parts.length !== 2) {
+        report.formatValid = false;
+        report.errors.push(`Line ${lineNum + 1}: Multiple arrows detected in rule: "${line}"`);
+        continue;
+      }
+
+      const lhs = parts[0].trim();
+      const rhsPart = parts[1].trim();
+
+      // Validate LHS: single non-terminal variable (capital letter or letter+subscript)
+      if (!/^[A-Z][0-9]*$/.test(lhs)) {
+        report.formatValid = false;
+        report.isCNF = false;
+        report.errors.push(`Line ${lineNum + 1}: Invalid LHS non-terminal '${lhs}'. Variables must start with an uppercase letter (e.g. S, A, B, C).`);
+        continue;
+      }
+
+      // Record first LHS variable as Start Symbol
+      if (!report.startSymbol) {
+        report.startSymbol = lhs;
+      }
+      report.nonTerminals.add(lhs);
+
+      // Support pipe '|' separating multiple alternative productions on the same line
+      const alternatives = rhsPart.split("|").map(alt => alt.trim()).filter(alt => alt.length > 0);
+
+      if (alternatives.length === 0) {
+        report.formatValid = false;
+        report.isCNF = false;
+        report.errors.push(`Line ${lineNum + 1}: Empty RHS for rule '${lhs} ->' (Epsilon / empty rules are not allowed in CNF).`);
+        continue;
+      }
+
+      for (const alt of alternatives) {
+        ruleIndex++;
+        // Check for epsilon representations
+        if (alt === "ε" || alt === "eps" || alt === "epsilon" || alt === "λ") {
+          report.isCNF = false;
+          report.errors.push(`Line ${lineNum + 1}: Epsilon production '${lhs} -> ${alt}' is not permitted in Chomsky Normal Form.`);
+          continue;
+        }
+
+        // Determine if RHS is terminal or binary non-terminal
+        let tokens = alt.split(/\s+/).filter(t => t.length > 0);
+
+        // If user typed contiguous e.g. "AB" without spaces
+        if (tokens.length === 1 && tokens[0].length === 2 && /^[A-Z]{2}$/.test(tokens[0])) {
+          tokens = [tokens[0][0], tokens[0][1]];
+        }
+
+        // Case A: Terminal Production A -> a
+        if (tokens.length === 1) {
+          const sym = tokens[0];
+          // Check if it's a single terminal character (lowercase letter, digit, or symbol, not an uppercase variable)
+          if (sym.length === 1 && !/^[A-Z]$/.test(sym)) {
+            report.terminals.add(sym);
+            const prod = {
+              id: ruleIndex,
+              lhs,
+              rhs: [sym],
+              isTerminal: true,
+              raw: `${lhs} -> ${sym}`,
+              line: lineNum + 1
+            };
+            report.productions.push(prod);
+
+            if (!report.terminalRules.has(sym)) {
+              report.terminalRules.set(sym, new Set());
+            }
+            report.terminalRules.get(sym).add(lhs);
+            continue;
+          } else if (sym.length === 1 && /^[A-Z]$/.test(sym)) {
+            // Unit production A -> B (Invalid in CNF)
+            report.isCNF = false;
+            report.errors.push(`Line ${lineNum + 1}: Unit production '${lhs} -> ${sym}' violates CNF. Unit productions (A → B) are not allowed.`);
+            continue;
+          } else {
+            // Multiple characters or invalid terminal
+            report.isCNF = false;
+            report.errors.push(`Line ${lineNum + 1}: Production '${lhs} -> ${alt}' violates CNF. Must be exactly one terminal (e.g. 'a') or two variables (e.g. 'AB').`);
+            continue;
+          }
+        }
+
+        // Case B: Binary Variable Production A -> B C
+        if (tokens.length === 2) {
+          const [B, C] = tokens;
+          const isBVar = /^[A-Z][0-9]*$/.test(B);
+          const isCVar = /^[A-Z][0-9]*$/.test(C);
+
+          if (isBVar && isCVar) {
+            report.nonTerminals.add(B);
+            report.nonTerminals.add(C);
+            const prod = {
+              id: ruleIndex,
+              lhs,
+              rhs: [B, C],
+              isTerminal: false,
+              raw: `${lhs} -> ${B}${C}`,
+              line: lineNum + 1
+            };
+            report.productions.push(prod);
+
+            const key = `${B} ${C}`;
+            if (!report.binaryRules.has(key)) {
+              report.binaryRules.set(key, new Set());
+            }
+            report.binaryRules.get(key).add(lhs);
+            continue;
+          } else {
+            report.isCNF = false;
+            report.errors.push(`Line ${lineNum + 1}: Production '${lhs} -> ${alt}' has non-variables. In CNF, binary rules must have two uppercase variables (e.g. A → BC).`);
+            continue;
+          }
+        }
+
+        // Case C: > 2 tokens (Ternary or larger)
+        if (tokens.length > 2) {
+          report.isCNF = false;
+          report.errors.push(`Line ${lineNum + 1}: Production '${lhs} -> ${alt}' has ${tokens.length} RHS symbols. CNF requires strictly 2 variables or 1 terminal.`);
+          continue;
+        }
+      }
+    }
+
+    // Validate input string characters against grammar terminals
+    if (cleanString.length > 0) {
+      for (let i = 0; i < cleanString.length; i++) {
+        const char = cleanString[i];
+        if (!report.terminals.has(char)) {
+          report.symbolsValid = false;
+          report.errors.push(`Input character '${char}' at index ${i + 1} does not appear as a terminal in any grammar production.`);
+        }
+      }
+    }
+
+    report.isValid = (
+      !report.grammarEmpty &&
+      !report.stringEmpty &&
+      report.formatValid &&
+      report.isCNF &&
+      report.symbolsValid &&
+      report.errors.length === 0
+    );
+
+    return report;
+  }
+}
+
+// ============================================================================
+// 3. CYK DYNAMIC PROGRAMMING ENGINE
+// ============================================================================
+class CYKEngine {
+  /**
+   * Run the Cocke-Younger-Kasami Dynamic Programming algorithm
+   * @param {Object} grammarReport Validated grammar object from CNFValidator
+   * @param {string} inputString The string to parse
+   * @returns {Object} Complete CYK execution result with tables, derivations, and trace
+   */
+  static execute(grammarReport, inputString) {
+    const w = inputString.trim();
+    const n = w.length;
+    const startSymbol = grammarReport.startSymbol;
+
+    // 2D Array DP Table: table[i][j] holds Set of non-terminal symbols
+    // 0 <= i <= j < n
+    const table = Array.from({ length: n }, () =>
+      Array.from({ length: n }, () => new Set())
+    );
+
+    // Rich metadata structure for inspector and step explanations
+    const metadata = Array.from({ length: n }, () =>
+      Array.from({ length: n }, () => null)
+    );
+
+    // Execution trace array grouped by substring length l
+    const executionTrace = [];
+
+    // ------------------------------------------------------------------------
+    // STEP 1: Base Case — Substrings of Length 1 (Terminal Rules A -> a)
+    // ------------------------------------------------------------------------
+    const length1Steps = {
+      length: 1,
+      title: "Step 1: Base Case — Terminal Productions (Substrings of Length 1)",
+      description: "For each single character w[i], find all variables A such that A → w[i].",
+      cells: []
+    };
+
+    for (let i = 0; i < n; i++) {
+      const char = w[i];
+      const matchingVars = grammarReport.terminalRules.get(char) || new Set();
+      const derivations = [];
+
+      for (const A of matchingVars) {
+        table[i][i].add(A);
+        derivations.push({
+          variable: A,
+          rule: `${A} -> ${char}`,
+          terminal: char,
+          type: "terminal"
+        });
+      }
+
+      const cellInfo = {
+        i,
+        j: i,
+        length: 1,
+        substring: char,
+        variables: Array.from(table[i][i]).sort(),
+        derivations,
+        splits: [],
+        containsStart: table[i][i].has(startSymbol)
+      };
+
+      metadata[i][i] = cellInfo;
+      length1Steps.cells.push(cellInfo);
+    }
+    executionTrace.push(length1Steps);
+
+    // ------------------------------------------------------------------------
+    // STEP 2 to n: Inductive Step — Substrings of Length l (2 to n)
+    // ------------------------------------------------------------------------
+    for (let l = 2; l <= n; l++) {
+      const lengthSteps = {
+        length: l,
+        title: `Step ${l}: Substrings of Length ${l}`,
+        description: `Examine all substrings of length ${l}, evaluating all possible split points k.`,
+        cells: []
+      };
+
+      for (let i = 0; i <= n - l; i++) {
+        const j = i + l - 1;
+        const subStr = w.substring(i, j + 1);
+        const cellDerivations = [];
+        const splitEvaluations = [];
+
+        // Try every split position k from i to j-1
+        for (let k = i; k < j; k++) {
+          const leftCell = { i, j: k, substring: w.substring(i, k + 1), vars: Array.from(table[i][k]).sort() };
+          const rightCell = { i: k + 1, j, substring: w.substring(k + 1, j + 1), vars: Array.from(table[k + 1][j]).sort() };
+          const pairsChecked = [];
+          const matchesInSplit = [];
+
+          for (const B of table[i][k]) {
+            for (const C of table[k + 1][j]) {
+              const pairKey = `${B} ${C}`;
+              const matchingVars = grammarReport.binaryRules.get(pairKey);
+
+              if (matchingVars && matchingVars.size > 0) {
+                for (const A of matchingVars) {
+                  table[i][j].add(A);
+                  const deriv = {
+                    variable: A,
+                    rule: `${A} -> ${B}${C}`,
+                    splitK: k,
+                    splitPosition1Based: `${i + 1}..${k + 1} | ${k + 2}..${j + 1}`,
+                    leftVar: B,
+                    rightVar: C,
+                    leftSubstring: leftCell.substring,
+                    rightSubstring: rightCell.substring,
+                    leftCoords: `[${i}, ${k}]`,
+                    rightCoords: `[${k + 1}, ${j}]`,
+                    type: "binary"
+                  };
+                  cellDerivations.push(deriv);
+                  matchesInSplit.push(deriv);
+                  pairsChecked.push({ pair: `${B}${C}`, match: true, rule: `${A} -> ${B}${C}` });
+                }
+              } else {
+                pairsChecked.push({ pair: `${B}${C}`, match: false });
+              }
+            }
+          }
+
+          splitEvaluations.push({
+            splitIndex: k,
+            splitOffset: k - i + 1,
+            leftCell,
+            rightCell,
+            pairsChecked,
+            matches: matchesInSplit
+          });
+        }
+
+        const cellInfo = {
+          i,
+          j,
+          length: l,
+          substring: subStr,
+          variables: Array.from(table[i][j]).sort(),
+          derivations: cellDerivations,
+          splits: splitEvaluations,
+          containsStart: table[i][j].has(startSymbol)
+        };
+
+        metadata[i][j] = cellInfo;
+        lengthSteps.cells.push(cellInfo);
+      }
+      executionTrace.push(lengthSteps);
+    }
+
+    // ------------------------------------------------------------------------
+    // FINAL RESULT & BOOLEAN MATRIX
+    // ------------------------------------------------------------------------
+    const finalVariables = Array.from(table[0][n - 1]).sort();
+    const isAccepted = table[0][n - 1].has(startSymbol);
+
+    // Build Boolean Matrix: boolMatrix[i][j] = table[i][j].has(startSymbol)
+    const boolMatrix = Array.from({ length: n }, (_, i) =>
+      Array.from({ length: n }, (_, j) => (j >= i ? table[i][j].has(startSymbol) : null))
+    );
+
+    return {
+      inputString: w,
+      length: n,
+      startSymbol,
+      table,
+      metadata,
+      boolMatrix,
+      isAccepted,
+      finalVariables,
+      executionTrace,
+      grammarSummary: {
+        startSymbol,
+        nonTerminals: Array.from(grammarReport.nonTerminals).sort(),
+        terminals: Array.from(grammarReport.terminals).sort(),
+        productions: grammarReport.productions
+      }
+    };
+  }
+}
+
+// ============================================================================
+// 4. UI CONTROLLER & DOM RENDERING
+// ============================================================================
+class CYKApp {
+  constructor() {
+    this.currentResult = null;
+    this.selectedCellCoords = null;
+
+    // DOM Elements
+    this.grammarInput = document.getElementById("grammarInput");
+    this.stringInput = document.getElementById("stringInput");
+    this.btnRun = document.getElementById("btnRun");
+    this.btnReset = document.getElementById("btnReset");
+    this.btnClear = document.getElementById("btnClear");
+    this.validationCard = document.getElementById("validationCard");
+    this.validationList = document.getElementById("validationList");
+
+    // Output Sections
+    this.outputSection = document.getElementById("outputSection");
+    this.summaryCard = document.getElementById("summaryCard");
+    this.resultBanner = document.getElementById("resultBanner");
+    this.pyramidContainer = document.getElementById("pyramidContainer");
+    this.matrixContainer = document.getElementById("matrixContainer");
+    this.booleanMatrixContainer = document.getElementById("booleanMatrixContainer");
+    this.cellInspector = document.getElementById("cellInspector");
+    this.traceAccordion = document.getElementById("traceAccordion");
+
+    // Buttons & Toggles
+    this.viewPyramidBtn = document.getElementById("viewPyramidBtn");
+    this.viewMatrixBtn = document.getElementById("viewMatrixBtn");
+    this.btnPrint = document.getElementById("btnPrint");
+    this.btnDownloadCSV = document.getElementById("btnDownloadCSV");
+    this.presetSelect = document.getElementById("presetSelect");
+
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    this.btnRun.addEventListener("click", () => this.handleRun());
+    this.btnReset.addEventListener("click", () => this.handleReset());
+    this.btnClear.addEventListener("click", () => this.handleClear());
+
+    if (this.presetSelect) {
+      this.presetSelect.addEventListener("change", (e) => {
+        if (e.target.value && PRESETS[e.target.value]) {
+          this.loadPreset(e.target.value);
+        }
+      });
+    }
+
+    // Quick Preset Buttons
+    document.querySelectorAll("[data-preset]").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const presetKey = e.currentTarget.getAttribute("data-preset");
+        this.loadPreset(presetKey);
+      });
+    });
+
+    // View Switchers (Pyramid vs Matrix)
+    if (this.viewPyramidBtn && this.viewMatrixBtn) {
+      this.viewPyramidBtn.addEventListener("click", () => {
+        this.viewPyramidBtn.classList.add("active");
+        this.viewMatrixBtn.classList.remove("active");
+        this.pyramidContainer.classList.remove("hidden");
+        this.matrixContainer.classList.add("hidden");
+      });
+
+      this.viewMatrixBtn.addEventListener("click", () => {
+        this.viewMatrixBtn.classList.add("active");
+        this.viewPyramidBtn.classList.remove("active");
+        this.matrixContainer.classList.remove("hidden");
+        this.pyramidContainer.classList.add("hidden");
+      });
+    }
+
+    // Export buttons
+    if (this.btnPrint) {
+      this.btnPrint.addEventListener("click", () => window.print());
+    }
+
+    if (this.btnDownloadCSV) {
+      this.btnDownloadCSV.addEventListener("click", () => this.exportCSV());
+    }
+
+    // Step-by-Step Expand/Collapse All
+    const btnExpandAll = document.getElementById("btnExpandAll");
+    const btnCollapseAll = document.getElementById("btnCollapseAll");
+    if (btnExpandAll && btnCollapseAll) {
+      btnExpandAll.addEventListener("click", () => {
+        document.querySelectorAll(".step-accordion-item").forEach(el => el.classList.add("open"));
+      });
+      btnCollapseAll.addEventListener("click", () => {
+        document.querySelectorAll(".step-accordion-item").forEach(el => el.classList.remove("open"));
+      });
+    }
+  }
+
+  loadPreset(presetKey) {
+    const preset = PRESETS[presetKey];
+    if (!preset) return;
+    this.grammarInput.value = preset.grammar;
+    this.stringInput.value = preset.string;
+    if (this.presetSelect) this.presetSelect.value = presetKey;
+    this.handleRun();
+  }
+
+  handleClear() {
+    this.grammarInput.value = "";
+    this.stringInput.value = "";
+    this.validationCard.classList.add("hidden");
+    this.outputSection.classList.add("hidden");
+    this.currentResult = null;
+    this.selectedCellCoords = null;
+  }
+
+  handleReset() {
+    this.loadPreset("example3");
+  }
+
+  handleRun() {
+    const grammarText = this.grammarInput.value;
+    const inputString = this.stringInput.value.trim();
+
+    // 1. Validate Grammar and Input String
+    const validation = CNFValidator.validate(grammarText, inputString);
+    this.renderValidation(validation);
+
+    if (!validation.isValid) {
+      this.outputSection.classList.add("hidden");
+      this.currentResult = null;
+      return;
+    }
+
+    // 2. Execute CYK Algorithm
+    const result = CYKEngine.execute(validation, inputString);
+    this.currentResult = result;
+
+    // 3. Render all UI sections
+    this.outputSection.classList.remove("hidden");
+    this.renderGrammarSummary(result.grammarSummary, result.inputString);
+    this.renderResultBanner(result);
+    this.renderCYKPyramid(result);
+    this.renderCYKMatrix(result);
+    this.renderBooleanMatrix(result);
+    this.renderStepByStep(result);
+
+    // Auto-select apex cell (0, n-1) for initial inspection
+    this.inspectCell(0, result.length - 1);
+
+    // Scroll smoothly to result banner
+    this.resultBanner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  // --------------------------------------------------------------------------
+  // VALIDATION RENDERING
+  // --------------------------------------------------------------------------
+  renderValidation(val) {
+    this.validationCard.classList.remove("hidden");
+    let html = "";
+
+    if (val.isValid) {
+      this.validationCard.className = "card validation-card valid-state";
+      html += `
+        <div class="validation-status-header">
+          <span class="status-icon success-icon">✓</span>
+          <strong>Grammar & String Validation Passed</strong>
+        </div>
+        <ul class="validation-checklist">
+          <li><span class="check-mark">✓</span> Grammar format is well-formed</li>
+          <li><span class="check-mark">✓</span> All productions adhere strictly to Chomsky Normal Form (CNF)</li>
+          <li><span class="check-mark">✓</span> Start symbol identified: <code>${val.startSymbol}</code></li>
+          <li><span class="check-mark">✓</span> Input characters exist in grammar terminals: <code>${Array.from(val.terminals).join(", ")}</code></li>
+          <li><span class="check-mark">✓</span> Ready to execute Dynamic Programming CYK parser</li>
+        </ul>
+      `;
+    } else {
+      this.validationCard.className = "card validation-card invalid-state";
+      html += `
+        <div class="validation-status-header">
+          <span class="status-icon error-icon">✗</span>
+          <strong>Validation Failed — Unable to Execute CYK</strong>
+        </div>
+        <div class="validation-error-list">
+          <p class="error-lead">Please correct the following errors before running the algorithm:</p>
+          <ul>
+            ${val.errors.map(err => `<li><span class="cross-mark">✗</span> ${escapeHTML(err)}</li>`).join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+    this.validationList.innerHTML = html;
+  }
+
+  // --------------------------------------------------------------------------
+  // GRAMMAR SUMMARY RENDERING
+  // --------------------------------------------------------------------------
+  renderGrammarSummary(summary, inputString) {
+    const startSymbolEl = document.getElementById("summaryStartSymbol");
+    const nonTerminalsEl = document.getElementById("summaryNonTerminals");
+    const terminalsEl = document.getElementById("summaryTerminals");
+    const productionsCountEl = document.getElementById("summaryProdCount");
+    const stringEl = document.getElementById("summaryString");
+    const stringLenEl = document.getElementById("summaryStringLen");
+    const productionsListEl = document.getElementById("summaryProductionsList");
+
+    if (startSymbolEl) startSymbolEl.textContent = summary.startSymbol;
+    if (nonTerminalsEl) nonTerminalsEl.textContent = `{ ${summary.nonTerminals.join(", ")} }`;
+    if (terminalsEl) terminalsEl.textContent = `{ ${summary.terminals.join(", ")} }`;
+    if (productionsCountEl) productionsCountEl.textContent = `${summary.productions.length} rules`;
+    if (stringEl) stringEl.textContent = `"${inputString}"`;
+    if (stringLenEl) stringLenEl.textContent = inputString.length;
+
+    if (productionsListEl) {
+      productionsListEl.innerHTML = summary.productions.map(p => `
+        <span class="prod-badge"><code>${p.lhs} → ${p.rhs.join("")}</code></span>
+      `).join(" ");
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // RESULT BANNER RENDERING
+  // --------------------------------------------------------------------------
+  renderResultBanner(result) {
+    const isAccepted = result.isAccepted;
+    const finalSet = result.finalVariables.length > 0
+      ? `{ ${result.finalVariables.join(", ")} }`
+      : `∅ (Empty Set)`;
+
+    const bannerClass = isAccepted ? "result-banner accepted" : "result-banner rejected";
+    const statusIcon = isAccepted ? "✓" : "✗";
+    const statusTitle = isAccepted ? "STRING ACCEPTED" : "STRING REJECTED";
+    const statusSubtitle = isAccepted
+      ? `The input string "${result.inputString}" can be generated by the Context-Free Grammar.`
+      : `The input string "${result.inputString}" cannot be generated by the Context-Free Grammar.`;
+
+    const mathExplanation = isAccepted
+      ? `Start symbol <strong>${result.startSymbol}</strong> ∈ V[0][${result.length - 1}] = <code>${finalSet}</code>`
+      : `Start symbol <strong>${result.startSymbol}</strong> ∉ V[0][${result.length - 1}] = <code>${finalSet}</code>`;
+
+    this.resultBanner.className = bannerClass;
+    this.resultBanner.innerHTML = `
+      <div class="result-icon-container">
+        <div class="result-status-icon">${statusIcon}</div>
+      </div>
+      <div class="result-content">
+        <div class="result-badge-row">
+          <span class="badge ${isAccepted ? 'badge-accepted' : 'badge-rejected'}">${statusTitle}</span>
+          <span class="result-dp-cell">Apex Cell V[0][${result.length - 1}]: <code>${finalSet}</code></span>
+        </div>
+        <h2 class="result-title">${statusTitle}</h2>
+        <p class="result-subtitle">${statusSubtitle}</p>
+        <div class="result-math-reason">
+          <span class="math-icon">ℹ</span>
+          <span>Mathematical Conclusion: ${mathExplanation}.</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // --------------------------------------------------------------------------
+  // CYK TRIANGULAR PYRAMID RENDERING
+  // --------------------------------------------------------------------------
+  renderCYKPyramid(result) {
+    const n = result.length;
+    const w = result.inputString;
+    let html = `<div class="cyk-pyramid">`;
+
+    // Row l goes from n down to 1 (Length n at apex, length 1 at base)
+    for (let l = n; l >= 1; l--) {
+      html += `<div class="pyramid-row" data-length="${l}">`;
+      html += `<div class="pyramid-row-label">l = ${l}</div>`;
+      html += `<div class="pyramid-cells-wrap">`;
+
+      for (let i = 0; i <= n - l; i++) {
+        const j = i + l - 1;
+        const cellData = result.metadata[i][j];
+        const vars = cellData.variables;
+        const hasStart = cellData.containsStart;
+        const isApex = (i === 0 && j === n - 1);
+        const varsDisplay = vars.length > 0 ? `{${vars.join(", ")}}` : `∅`;
+
+        let cellClasses = "cyk-cell";
+        if (isApex) cellClasses += " apex-cell";
+        if (hasStart) cellClasses += " has-start";
+        if (vars.length === 0) cellClasses += " empty-cell";
+
+        html += `
+          <button type="button" class="${cellClasses}" data-i="${i}" data-j="${j}" title="Click to inspect cell V[${i}][${j}] (indices ${i + 1}..${j + 1})">
+            <div class="cell-coords">V[${i}][${j}]</div>
+            <div class="cell-vars">${varsDisplay}</div>
+            <div class="cell-substr">"${escapeHTML(cellData.substring)}"</div>
+          </button>
+        `;
+      }
+
+      html += `</div></div>`;
+    }
+
+    // Terminal string base row below length 1
+    html += `<div class="pyramid-row pyramid-base-row">`;
+    html += `<div class="pyramid-row-label">w[i]</div>`;
+    html += `<div class="pyramid-cells-wrap">`;
+    for (let i = 0; i < n; i++) {
+      html += `
+        <div class="terminal-char-cell" title="Input character at position ${i + 1}">
+          <div class="char-pos">i = ${i} (pos ${i + 1})</div>
+          <div class="char-val"><strong>${escapeHTML(w[i])}</strong></div>
+        </div>
+      `;
+    }
+    html += `</div></div>`;
+
+    html += `</div>`;
+    this.pyramidContainer.innerHTML = html;
+
+    // Attach click listeners to pyramid cells
+    this.pyramidContainer.querySelectorAll(".cyk-cell").forEach(cellBtn => {
+      cellBtn.addEventListener("click", (e) => {
+        const i = parseInt(e.currentTarget.getAttribute("data-i"), 10);
+        const j = parseInt(e.currentTarget.getAttribute("data-j"), 10);
+        this.inspectCell(i, j);
+      });
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // CYK MATRIX GRID RENDERING (Alternative view)
+  // --------------------------------------------------------------------------
+  renderCYKMatrix(result) {
+    const n = result.length;
+    let html = `
+      <div class="matrix-table-responsive">
+        <table class="academic-table cyk-matrix-table">
+          <thead>
+            <tr>
+              <th class="matrix-corner">Start \\ End</th>
+    `;
+
+    for (let j = 0; j < n; j++) {
+      html += `<th>j = ${j} <br><span class="table-sublabel">("${result.inputString[j]}")</span></th>`;
+    }
+    html += `</tr></thead><tbody>`;
+
+    for (let i = 0; i < n; i++) {
+      html += `<tr><th>i = ${i} <br><span class="table-sublabel">("${result.inputString[i]}")</span></th>`;
+      for (let j = 0; j < n; j++) {
+        if (j < i) {
+          html += `<td class="matrix-unused">—</td>`;
+        } else {
+          const cellData = result.metadata[i][j];
+          const vars = cellData.variables;
+          const varsDisplay = vars.length > 0 ? `{${vars.join(", ")}}` : `∅`;
+          const isApex = (i === 0 && j === n - 1);
+          let cellClass = "matrix-cell";
+          if (cellData.containsStart) cellClass += " matrix-has-start";
+          if (isApex) cellClass += " matrix-apex";
+
+          html += `
+            <td class="${cellClass}" data-i="${i}" data-j="${j}">
+              <div class="m-cell-content">
+                <span class="m-cell-vars">${varsDisplay}</span>
+                <span class="m-cell-sub">"${escapeHTML(cellData.substring)}"</span>
+              </div>
+            </td>
+          `;
+        }
+      }
+      html += `</tr>`;
+    }
+
+    html += `</tbody></table></div>`;
+    this.matrixContainer.innerHTML = html;
+
+    // Attach click listeners to matrix cells
+    this.matrixContainer.querySelectorAll(".matrix-cell").forEach(td => {
+      td.addEventListener("click", (e) => {
+        const i = parseInt(e.currentTarget.getAttribute("data-i"), 10);
+        const j = parseInt(e.currentTarget.getAttribute("data-j"), 10);
+        this.inspectCell(i, j);
+      });
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // BOOLEAN VALIDATION MATRIX RENDERING
+  // --------------------------------------------------------------------------
+  renderBooleanMatrix(result) {
+    const n = result.length;
+    const startSym = result.startSymbol;
+
+    let html = `
+      <div class="bool-matrix-header">
+        <p class="bool-info">
+          Each cell indicates whether Context-Free Grammar start symbol <code>${startSym}</code> was derived:
+          <span class="badge badge-success">TRUE</span> (derivable from ${startSym}) or
+          <span class="badge badge-neutral">FALSE</span> (not derivable).
+        </p>
+      </div>
+      <div class="matrix-table-responsive">
+        <table class="academic-table boolean-table">
+          <thead>
+            <tr>
+              <th class="matrix-corner">i \\ j</th>
+    `;
+
+    for (let j = 0; j < n; j++) {
+      html += `<th>j = ${j}</th>`;
+    }
+    html += `</tr></thead><tbody>`;
+
+    for (let i = 0; i < n; i++) {
+      html += `<tr><th>i = ${i}</th>`;
+      for (let j = 0; j < n; j++) {
+        if (j < i) {
+          html += `<td class="matrix-unused">—</td>`;
+        } else {
+          const isTrue = result.boolMatrix[i][j];
+          const isApex = (i === 0 && j === n - 1);
+          const badgeClass = isTrue ? "bool-true" : "bool-false";
+          const badgeText = isTrue ? "TRUE" : "FALSE";
+          let specialClass = isApex ? "bool-apex" : "";
+
+          html += `
+            <td class="${specialClass}" data-i="${i}" data-j="${j}">
+              <span class="bool-badge ${badgeClass}">${badgeText}</span>
+              ${isApex ? `<div class="apex-verdict">${isTrue ? '✓ ACCEPTED' : '✗ REJECTED'}</div>` : ''}
+            </td>
+          `;
+        }
+      }
+      html += `</tr>`;
+    }
+
+    html += `</tbody></table></div>`;
+    this.booleanMatrixContainer.innerHTML = html;
+  }
+
+  // --------------------------------------------------------------------------
+  // CELL INSPECTOR MODAL/PANEL RENDERING
+  // --------------------------------------------------------------------------
+  inspectCell(i, j) {
+    if (!this.currentResult) return;
+    const cellData = this.currentResult.metadata[i][j];
+    if (!cellData) return;
+
+    this.selectedCellCoords = { i, j };
+
+    // Highlight cell across pyramid and matrix views
+    document.querySelectorAll(".cyk-cell, .matrix-cell").forEach(el => {
+      const ci = parseInt(el.getAttribute("data-i"), 10);
+      const cj = parseInt(el.getAttribute("data-j"), 10);
+      if (ci === i && cj === j) {
+        el.classList.add("selected-cell");
+      } else {
+        el.classList.remove("selected-cell");
+      }
+    });
+
+    const varsDisplay = cellData.variables.length > 0
+      ? `{ ${cellData.variables.join(", ")} }`
+      : `∅ (Empty Set)`;
+
+    const isApex = (i === 0 && j === this.currentResult.length - 1);
+    const startSym = this.currentResult.startSymbol;
+    const hasStart = cellData.containsStart;
+
+    let html = `
+      <div class="inspector-card-inner">
+        <div class="inspector-header">
+          <div class="inspector-title-wrap">
+            <span class="cell-tag">Cell V[${i}][${j}]</span>
+            ${isApex ? '<span class="badge badge-accepted">Apex / Goal Cell</span>' : ''}
+          </div>
+          <div class="inspector-bool-status">
+            ${hasStart
+              ? `<span class="badge badge-success">TRUE (${startSym} ∈ V[${i}][${j}])</span>`
+              : `<span class="badge badge-neutral">FALSE (${startSym} ∉ V[${i}][${j}])</span>`}
+          </div>
+        </div>
+
+        <div class="inspector-grid">
+          <div class="inspector-field">
+            <span class="field-label">Substring</span>
+            <span class="field-value highlight-substr">"${escapeHTML(cellData.substring)}"</span>
+          </div>
+          <div class="inspector-field">
+            <span class="field-label">Position (0-based)</span>
+            <span class="field-value">[${i}..${j}]</span>
+          </div>
+          <div class="inspector-field">
+            <span class="field-label">Position (1-based)</span>
+            <span class="field-value">${i + 1}–${j + 1}</span>
+          </div>
+          <div class="inspector-field">
+            <span class="field-label">Substring Length</span>
+            <span class="field-value">${cellData.length}</span>
+          </div>
+        </div>
+
+        <div class="inspector-variables-box">
+          <span class="field-label">Variables in V[${i}][${j}]:</span>
+          <div class="variables-display">${varsDisplay}</div>
+        </div>
+
+        <div class="inspector-derivations">
+          <h4 class="inspector-section-title">Production Rules Used & Derivation Reason</h4>
+    `;
+
+    if (cellData.length === 1) {
+      // Terminal derivation
+      html += `
+        <div class="derivation-terminal-box">
+          <p><strong>Base Case (Length 1):</strong> Character <code>'${escapeHTML(cellData.substring)}'</code> matches the following terminal production(s):</p>
+          <ul class="derivation-rules-list">
+            ${cellData.derivations.length > 0
+              ? cellData.derivations.map(d => `
+                  <li><span class="badge badge-match">MATCH</span> <code>${d.rule}</code> → Add <strong>${d.variable}</strong> to V[${i}][${i}]</li>
+                `).join("")
+              : `<li><span class="badge badge-nomatch">NO MATCH</span> No terminal rule produces '${escapeHTML(cellData.substring)}'</li>`}
+          </ul>
+        </div>
+      `;
+    } else {
+      // Binary splits
+      html += `
+        <div class="derivation-splits-box">
+          <p class="derivation-lead">Evaluated <strong>${cellData.splits.length}</strong> split position(s) k ∈ [${i}..${j - 1}]:</p>
+          <div class="splits-table-responsive">
+            <table class="academic-table splits-table">
+              <thead>
+                <tr>
+                  <th>Split k</th>
+                  <th>Partition (w[i..k] | w[k+1..j])</th>
+                  <th>Left V[i][k]</th>
+                  <th>Right V[k+1][j]</th>
+                  <th>Valid CNF Productions (A → BC)</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+
+      cellData.splits.forEach(split => {
+        const leftVars = split.leftCell.vars.length > 0 ? `{${split.leftCell.vars.join(", ")}}` : `∅`;
+        const rightVars = split.rightCell.vars.length > 0 ? `{${split.rightCell.vars.join(", ")}}` : `∅`;
+        const matchRules = split.matches.map(m => `<code>${m.rule}</code> (gives <strong>${m.variable}</strong>)`).join(", ");
+
+        html += `
+          <tr>
+            <td><strong>k = ${split.splitIndex}</strong></td>
+            <td>"${escapeHTML(split.leftCell.substring)}" | "${escapeHTML(split.rightCell.substring)}"</td>
+            <td>V[${split.leftCell.i}][${split.leftCell.j}] = ${leftVars}</td>
+            <td>V[${split.rightCell.i}][${split.rightCell.j}] = ${rightVars}</td>
+            <td>
+              ${split.matches.length > 0
+                ? `<span class="badge badge-match">MATCH</span> ${matchRules}`
+                : `<span class="badge badge-nomatch">NO MATCH</span>`}
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    html += `</div></div>`;
+    this.cellInspector.innerHTML = html;
+  }
+
+  // --------------------------------------------------------------------------
+  // STEP-BY-STEP EXECUTION TRACE RENDERING
+  // --------------------------------------------------------------------------
+  renderStepByStep(result) {
+    let html = "";
+
+    result.executionTrace.forEach((stepGroup, groupIdx) => {
+      const isFirst = (groupIdx === 0);
+      html += `
+        <div class="step-accordion-item ${isFirst ? 'open' : ''}">
+          <button type="button" class="step-accordion-header">
+            <div class="step-header-left">
+              <span class="step-number-badge">Length ${stepGroup.length}</span>
+              <strong class="step-group-title">${stepGroup.title}</strong>
+            </div>
+            <div class="step-header-right">
+              <span class="cell-count-tag">${stepGroup.cells.length} substring(s)</span>
+              <span class="accordion-chevron">▼</span>
+            </div>
+          </button>
+
+          <div class="step-accordion-content">
+            <p class="step-group-desc">${stepGroup.description}</p>
+            <div class="step-cells-grid">
+      `;
+
+      stepGroup.cells.forEach(cell => {
+        const varsDisplay = cell.variables.length > 0 ? `{${cell.variables.join(", ")}}` : `∅`;
+        html += `
+          <div class="step-cell-card">
+            <div class="step-cell-header">
+              <span class="step-cell-id">V[${cell.i}][${cell.j}]</span>
+              <span class="step-cell-substr">Substring: <strong>"${escapeHTML(cell.substring)}"</strong> (indices ${cell.i + 1}..${cell.j + 1})</span>
+              <span class="step-cell-result">Result: <code>${varsDisplay}</code></span>
+            </div>
+        `;
+
+        if (cell.length === 1) {
+          html += `
+            <div class="step-detail-terminal">
+              <span>Input character: <code>'${escapeHTML(cell.substring)}'</code></span>
+              <span>Matching rules: ${cell.derivations.length > 0 ? cell.derivations.map(d => `<code>${d.rule}</code>`).join(", ") : "None"}</span>
+            </div>
+          `;
+        } else {
+          html += `<div class="step-splits-list">`;
+          cell.splits.forEach(s => {
+            const hasMatch = s.matches.length > 0;
+            const leftV = s.leftCell.vars.length > 0 ? `{${s.leftCell.vars.join(", ")}}` : `∅`;
+            const rightV = s.rightCell.vars.length > 0 ? `{${s.rightCell.vars.join(", ")}}` : `∅`;
+
+            html += `
+              <div class="step-split-row ${hasMatch ? 'split-matched' : ''}">
+                <div class="split-info">
+                  <span class="split-k">k = ${s.splitIndex}</span>:
+                  <span>"${escapeHTML(s.leftCell.substring)}" | "${escapeHTML(s.rightCell.substring)}"</span>
+                  <span class="split-cells-meta">(Left: V[${s.leftCell.i}][${s.leftCell.j}]=${leftV}, Right: V[${s.rightCell.i}][${s.rightCell.j}]=${rightV})</span>
+                </div>
+                <div class="split-result">
+                  ${hasMatch
+                    ? `<span class="badge badge-match">MATCH</span> ${s.matches.map(m => `<code>${m.rule}</code>`).join(", ")}`
+                    : `<span class="badge badge-nomatch">NO MATCH</span>`}
+                </div>
+              </div>
+            `;
+          });
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+      });
+
+      html += `</div></div></div>`;
+    });
+
+    this.traceAccordion.innerHTML = html;
+
+    // Accordion toggle click handlers
+    this.traceAccordion.querySelectorAll(".step-accordion-header").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const item = btn.parentElement;
+        item.classList.toggle("open");
+      });
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // CSV EXPORT
+  // --------------------------------------------------------------------------
+  exportCSV() {
+    if (!this.currentResult) return;
+    const r = this.currentResult;
+    const n = r.length;
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Row (Length),Start Index (0-based),End Index (0-based),Position (1-based),Substring,Variables,Contains Start Symbol (S)\n";
+
+    for (let l = 1; l <= n; l++) {
+      for (let i = 0; i <= n - l; i++) {
+        const j = i + l - 1;
+        const cell = r.metadata[i][j];
+        const varsStr = cell.variables.length > 0 ? `"{${cell.variables.join(", ")}}"` : `"{}"`;
+        const substr = `"${cell.substring}"`;
+        const containsStart = cell.containsStart ? "TRUE" : "FALSE";
+        const pos1Based = `"${i + 1}..${j + 1}"`;
+
+        csvContent += `${l},${i},${j},${pos1Based},${substr},${varsStr},${containsStart}\n`;
+      }
+    }
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `CYK_table_${r.inputString}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
+
+// ============================================================================
+// 5. HELPER FUNCTIONS & INITIALIZATION
+// ============================================================================
+function escapeHTML(str) {
+  if (typeof str !== "string") return str;
+  return str.replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+}
+
+// Initialize on DOM load in browser environment
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", () => {
+    window.cykApp = new CYKApp();
+    // Automatically load Example 3 (classic baaba) on launch so user sees a working demonstration immediately
+    window.cykApp.loadPreset("example3");
+  });
+}
+
+// Export for Node.js automated testing
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { CNFValidator, CYKEngine, PRESETS };
+}
+
+</script>
+</body>
+</html>

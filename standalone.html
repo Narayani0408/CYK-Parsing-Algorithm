@@ -1658,7 +1658,6 @@ body {
       <nav class="main-nav" aria-label="Main Navigation">
         <a href="#parser-section" class="nav-link">Parser</a>
         <a href="#how-it-works-section" class="nav-link">How It Works</a>
-        <a href="#algorithm-section" class="nav-link">Algorithm</a>
         <a href="#complexity-section" class="nav-link">Complexity</a>
         <a href="#examples-section" class="nav-link">Examples</a>
       </nav>
@@ -1940,65 +1939,7 @@ body {
       </div>
     </section>
 
-    <!-- SECTION 9 & 10: FORMAL ALGORITHM & PSEUDOCODE -->
-    <div class="two-col-grid" id="algorithm-section">
 
-      <!-- SECTION 9: FORMAL ALGORITHM -->
-      <section class="card">
-        <div class="card-header">
-          <h2 class="card-title">Formal Algorithm: CYK(G, w)</h2>
-        </div>
-        <div style="font-size: 0.9rem; color: var(--neutral-800); line-height: 1.6;">
-          <p style="margin-bottom: 0.75rem;"><strong>Input:</strong> A Context-Free Grammar \(G = (V, \Sigma, R, S)\) in Chomsky Normal Form (CNF) and an input string \(w = c_0 c_1 \dots c_{n-1}\) of length \(n\).</p>
-          <ol style="padding-left: 1.25rem; display: grid; gap: 0.6rem;">
-            <li>Initialize a triangular dynamic programming table \(T[n][n]\), where each entry \(T[i][j]\) is a set of variables initialized to \(\emptyset\).</li>
-            <li><strong>Base Case (Length 1):</strong> For each terminal character \(w[i]\) where \(0 \le i < n\):
-              <br>Find all non-terminals \(A\) such that \(A \to w[i] \in R\).
-              <br>Add \(A\) to \(T[i][i]\).
-            </li>
-            <li><strong>Inductive Step (Lengths \(l = 2 \text{ to } n\)):</strong>
-              <br>For every starting position \(i = 0 \text{ to } n - l\):
-              <br>&nbsp;&nbsp;Set ending position \(j = i + l - 1\).
-              <br>&nbsp;&nbsp;For every partition point \(k = i \text{ to } j - 1\):
-              <br>&nbsp;&nbsp;&nbsp;&nbsp;Check each \(B \in T[i][k]\) and \(C \in T[k+1][j]\).
-              <br>&nbsp;&nbsp;&nbsp;&nbsp;If production \(A \to BC \in R\), add \(A\) to \(T[i][j]\).
-            </li>
-            <li><strong>Membership Check:</strong> Check whether the start symbol \(S \in T[0][n-1]\).</li>
-            <li>If \(S \in T[0][n-1]\), return <strong>ACCEPT</strong>; otherwise return <strong>REJECT</strong>.</li>
-          </ol>
-        </div>
-      </section>
-
-      <!-- SECTION 10: PSEUDOCODE -->
-      <section class="card">
-        <div class="card-header">
-          <h2 class="card-title">Pseudocode</h2>
-        </div>
-        <div class="code-block-container">
-<pre><code><span class="code-keyword">CYK</span>(G, w):
-  <span class="code-var">n</span> = length(w)
-  <span class="code-keyword">let</span> T[n][n] be sets of variables
-
-  <span class="code-comment">// Base Case: length 1</span>
-  <span class="code-keyword">for</span> i = <span class="code-number">0</span> <span class="code-keyword">to</span> n - <span class="code-number">1</span>:
-    T[i][i] = { A | A &rarr; w[i] &isin; G }
-
-  <span class="code-comment">// Substrings of length 2 to n</span>
-  <span class="code-keyword">for</span> length = <span class="code-number">2</span> <span class="code-keyword">to</span> n:
-    <span class="code-keyword">for</span> i = <span class="code-number">0</span> <span class="code-keyword">to</span> n - length:
-      j = i + length - <span class="code-number">1</span>
-
-      <span class="code-comment">// Try all split points k</span>
-      <span class="code-keyword">for</span> k = i <span class="code-keyword">to</span> j - <span class="code-number">1</span>:
-        <span class="code-keyword">for</span> each production A &rarr; BC:
-          <span class="code-keyword">if</span> B &isin; T[i][k] <span class="code-keyword">and</span> C &isin; T[k+<span class="code-number">1</span>][j]:
-            T[i][j].add(A)
-
-  <span class="code-keyword">return</span> S &isin; T[<span class="code-number">0</span>][n - <span class="code-number">1</span>]</code></pre>
-        </div>
-      </section>
-
-    </div>
 
     <!-- SECTION 11: COMPLEXITY ANALYSIS -->
     <section class="card" id="complexity-section">

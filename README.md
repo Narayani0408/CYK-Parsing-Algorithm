@@ -1,7 +1,8 @@
 # CYK Parsing Algorithm: Cocke–Younger–Kasami Dynamic Programming
 
-> **Course:** Design and Analysis of Algorithms (CS302)  
-> **Topic:** Dynamic Programming / Formal Languages & Automata Theory  
+> **Department:** Computer Science and Engineering with Artificial Intelligence and Machine Learning (CSE AIML)  
+> **Course:** Theory of Computation (CM24034)  
+> **Topic:** Formal Languages & Automata Theory / Dynamic Programming Parsing  
 > **Technology Stack:** HTML5, CSS3, Vanilla JavaScript (Zero external dependencies, 100% offline & GitHub Pages compatible)
 
 ---
